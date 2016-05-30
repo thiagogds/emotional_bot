@@ -1,21 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Simple Bot to reply to Telegram messages
+# Simple Bot to analyze emotions in Telegram messages
 # This program is dedicated to the public domain under the CC0 license.
 
-"""
-This Bot uses the Updater class to handle the bot.
-
-First, a few handler functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-
-Usage:
-Basic Echobot example, repeats messages.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
 import logging
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -48,20 +36,35 @@ def echo(bot, update):
         url='https://gateway.watsonplatform.net/tone-analyzer/api'
         )
 
-    moods = {
-        'Anger': u'😡',
-        'Disgust': u'😷',
-        'Fear': u'😱',
-        'Joy': u'😄',
-        'Sadness': u'😢',
-    }
+    text = ''
 
     response = tone_analyzer.tone(text=update.message.text)
     emotion_tone = filter(lambda x: x['category_id'] == 'emotion_tone', response['document_tone']['tone_categories'])[0]
+
     tones = emotion_tone['tones']
-    text = ''
+
+    text += 'Emotion tones:\n'
     for tone in tones:
-        text += moods[tone['tone_name']] + " " + tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
+        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
+        text += '\n'
+    text += '\n'
+
+    writing_tone = filter(lambda x: x['category_id'] == 'writing_tone', response['document_tone']['tone_categories'])[0]
+
+    tones = writing_tone['tones']
+
+    text += 'Writing tones:\n'
+    for tone in tones:
+        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
+        text += '\n'
+    text += '\n'
+
+    social_tone = filter(lambda x: x['category_id'] == 'social_tone', response['document_tone']['tone_categories'])[0]
+    tones = social_tone['tones']
+
+    text += 'Social tones:\n'
+    for tone in tones:
+        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
         text += '\n'
 
     bot.sendMessage(update.message.chat_id, text=text)
