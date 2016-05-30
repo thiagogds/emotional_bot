@@ -28,7 +28,21 @@ def help(bot, update):
     bot.sendMessage(update.message.chat_id, text='Help!')
 
 
-def echo(bot, update):
+def get_emotion_text(response, emotion_title, category_id):
+    emotion_tone = filter(lambda x: x['category_id'] == category_id, response['document_tone']['tone_categories'])[0]
+    tones = emotion_tone['tones']
+
+    text = emotion_title
+    text += ':\n'
+
+    for tone in tones:
+        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
+        text += '\n'
+
+    return text
+
+
+def echo(bot, update): # TODO: change name
     tone_analyzer = ToneAnalyzerV3Beta(
         username=config('USERNAME'),
         password=config('PASSWORD'),
@@ -36,37 +50,15 @@ def echo(bot, update):
         url='https://gateway.watsonplatform.net/tone-analyzer/api'
         )
 
-    text = ''
-
     response = tone_analyzer.tone(text=update.message.text)
-    emotion_tone = filter(lambda x: x['category_id'] == 'emotion_tone', response['document_tone']['tone_categories'])[0]
 
-    tones = emotion_tone['tones']
+    text = get_emotion_text(response, 'Emotion tones', 'emotion_tone')
+    bot.sendMessage(update.message.chat_id, text=text)
 
-    text += 'Emotion tones:\n'
-    for tone in tones:
-        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
-        text += '\n'
-    text += '\n'
+    text = get_emotion_text(response, 'Writing tones', 'writing_tone')
+    bot.sendMessage(update.message.chat_id, text=text)
 
-    writing_tone = filter(lambda x: x['category_id'] == 'writing_tone', response['document_tone']['tone_categories'])[0]
-
-    tones = writing_tone['tones']
-
-    text += 'Writing tones:\n'
-    for tone in tones:
-        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
-        text += '\n'
-    text += '\n'
-
-    social_tone = filter(lambda x: x['category_id'] == 'social_tone', response['document_tone']['tone_categories'])[0]
-    tones = social_tone['tones']
-
-    text += 'Social tones:\n'
-    for tone in tones:
-        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
-        text += '\n'
-
+    text = get_emotion_text(response, 'Social tones', 'social_tone')
     bot.sendMessage(update.message.chat_id, text=text)
 
 
