@@ -28,7 +28,7 @@ def help(bot, update):
     bot.sendMessage(update.message.chat_id, text='Help!')
 
 
-def get_emotion_text(response, emotion_title, category_id):
+def create_emotion_text(response, emotion_title, category_id):
     emotion_tone = filter(lambda x: x['category_id'] == category_id, response['document_tone']['tone_categories'])[0]
     tones = emotion_tone['tones']
 
@@ -52,13 +52,13 @@ def analyze(bot, update):
 
     response = tone_analyzer.tone(text=update.message.text)
 
-    text = get_emotion_text(response, 'Emotion tones', 'emotion_tone')
+    text = create_emotion_text(response, 'Emotion tones', 'emotion_tone')
     bot.sendMessage(update.message.chat_id, text=text)
 
-    text = get_emotion_text(response, 'Writing tones', 'writing_tone')
+    text = create_emotion_text(response, 'Writing tones', 'writing_tone')
     bot.sendMessage(update.message.chat_id, text=text)
 
-    text = get_emotion_text(response, 'Social tones', 'social_tone')
+    text = create_emotion_text(response, 'Social tones', 'social_tone')
     bot.sendMessage(update.message.chat_id, text=text)
 
 
