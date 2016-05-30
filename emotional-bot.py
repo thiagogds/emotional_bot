@@ -42,7 +42,7 @@ def get_emotion_text(response, emotion_title, category_id):
     return text
 
 
-def echo(bot, update): # TODO: change name
+def analyze(bot, update):
     tone_analyzer = ToneAnalyzerV3Beta(
         username=config('USERNAME'),
         password=config('PASSWORD'),
@@ -77,8 +77,8 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
 
-    # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler([Filters.text], echo))
+    # on noncommand i.e message - analyze the message on Telegram
+    dp.add_handler(MessageHandler([Filters.text], analyze))
 
     # log all errors
     dp.add_error_handler(error)
