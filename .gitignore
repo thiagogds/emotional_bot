@@ -1,2 +1,4 @@
 *.pyc
 settings.ini
+.Python
+env
