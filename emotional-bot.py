@@ -46,7 +46,7 @@ def analyze(bot, update):
     tone_analyzer = ToneAnalyzerV3Beta(
         username=config('USERNAME'),
         password=config('PASSWORD'),
-        version='2016-02-11',
+        version='2016-05-19',
         url='https://gateway.watsonplatform.net/tone-analyzer/api'
         )
 
@@ -55,7 +55,7 @@ def analyze(bot, update):
     text = create_emotion_text(response, 'Emotion tones', 'emotion_tone')
     bot.sendMessage(update.message.chat_id, text=text)
 
-    text = create_emotion_text(response, 'Writing tones', 'writing_tone')
+    text = create_emotion_text(response, 'Language tones', 'language_tone')
     bot.sendMessage(update.message.chat_id, text=text)
 
     text = create_emotion_text(response, 'Social tones', 'social_tone')
