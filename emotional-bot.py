@@ -18,26 +18,39 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# linear transformation
+def linear(n):
+    low_value = 0.5
+    high_value = 0.75
+    less_balls = 3
+    more_balls = 7
+    result = less_balls + (more_balls - less_balls) * ((n - low_value)/(high_value - low_value))
+    if result < 0:
+        result = 0
+    return result
+
+
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(bot, update):
-    bot.sendMessage(update.message.chat_id, text='Hi!')
+    bot.sendMessage(update.message.chat_id, text='Hi! I am a bot that analyzes what people will think you are feeling through your text.')
+    bot.sendMessage(update.message.chat_id, text='Just send me your text.')
 
 
-def help(bot, update):
-    bot.sendMessage(update.message.chat_id, text='Help!')
-
-
-def create_emotion_text(response, emotion_title, category_id):
-    emotion_tone = filter(lambda x: x['category_id'] == category_id, response['document_tone']['tone_categories'])[0]
+def create_emotion_text(response):
+    emotion_tone = filter(lambda x: x['category_id'] == 'emotion_tone',
+            response['document_tone']['tone_categories'])[0]
     tones = emotion_tone['tones']
 
-    text = emotion_title
-    text += ':\n'
+    text = u'The emotions in your text seems to be:\n'
 
     for tone in tones:
-        text += tone['tone_name'] + ": " + str(tone['score'] * 100) + "%"
-        text += '\n'
+        progress = list(u'************')
+        position = int(round(linear(tone['score'])))
+        progress[position] = u'@'
+        text += u'\n' + u''.join(progress) + u' ' + unicode(tone['tone_name'])
+
+        text += u'\n'
 
     return text
 
@@ -52,13 +65,7 @@ def analyze(bot, update):
 
     response = tone_analyzer.tone(text=update.message.text)
 
-    text = create_emotion_text(response, 'Emotion tones', 'emotion_tone')
-    bot.sendMessage(update.message.chat_id, text=text)
-
-    text = create_emotion_text(response, 'Language tones', 'language_tone')
-    bot.sendMessage(update.message.chat_id, text=text)
-
-    text = create_emotion_text(response, 'Social tones', 'social_tone')
+    text = create_emotion_text(response)
     bot.sendMessage(update.message.chat_id, text=text)
 
 
@@ -75,7 +82,6 @@ def main():
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
 
     # on noncommand i.e message - analyze the message on Telegram
     dp.add_handler(MessageHandler([Filters.text], analyze))
